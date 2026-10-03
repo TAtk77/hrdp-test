@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HRDP Identification Drill</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Lato:wght@300;400;700&display=swap');
+
+:root {
+  --bg:        #0d1117;
+  --surface:   #161c26;
+  --card:      #1c2535;
+  --border:    #263045;
+  --accent:    #1e6fb5;
+  --accent2:   #2491d4;
+  --red:       #cb2c21;
+  --green:     #1e7e4a;
+  --green-lit: #27ae60;
+  --red-lit:   #e74c3c;
+  --text:      #d0d9e8;
+  --muted:     #7a8fa8;
+  --label:     #5b8fbf;
+  --white:     #f0f4fa;
+}
+:root.light {
+  --bg:        #eef2f7;
+  --surface:   #dde5f0;
+  --card:      #f4f7fb;
+  --border:    #b8c8de;
+  --accent:    #1e6fb5;
+  --accent2:   #1a7abf;
+  --red:       #c0392b;
+  --green:     #1e7e4a;
+  --green-lit: #1a7a40;
+  --red-lit:   #c0392b;
+  --text:      #1a2535;
+  --muted:     #4a6480;
+  --label:     #83b9f0;
+  --white:     #0d1a2e;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Lato', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background .25s, color .25s;
+}
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, #0a1a2e 0%, #0f2a4a 60%, #12355e 100%);
+  border-bottom: 2px solid var(--accent);
+  padding: 24px 24px 20px;
+  position: relative;
+}
+:root.light header { background: linear-gradient(135deg, #1a3a5c, #1e5599, #1a6abf); }
+header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--red), var(--accent), var(--accent2));
+}
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.header-text { flex: 1; }
+.header-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--label); margin-bottom: 4px;
+}
+header h1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 32px; font-weight: 700;
+  color: #f0f4fa; line-height: 1.1;
+}
+header h1 span { color: var(--accent2); }
+.header-sub { font-size: 13px; color: #7a9ab8; margin-top: 4px; }
+
+#theme-toggle {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  color: #f0f4fa; width: 34px; height: 34px;
+  border-radius: 6px; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s; flex-shrink: 0;
+}
+#theme-toggle:hover { background: rgba(255,255,255,.2); }
+
+/* ── CONTROLS BAR ── */
+.controls {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.controls-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.progress-bar-outer {
+  width: 140px; height: 6px;
+  background: var(--border);
+  border-radius: 3px; overflow: hidden;
+}
+.progress-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 3px;
+  transition: width .3s;
+  width: 0%;
+}
+#progress-text { min-width: 50px; }
+.spacer { flex: 1; }
+#save-status {
+  font-size: 12px; opacity: 0;
+  transition: opacity .4s;
+  min-width: 80px; text-align: right;
+}
+.score-btn {
+  background: var(--accent); border: none;
+  color: #fff; padding: 7px 18px;
+  border-radius: 4px; font-family: 'Lato', sans-serif;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer; letter-spacing: 1px;
+  text-transform: uppercase; transition: background .15s;
+}
+.score-btn:hover { background: var(--accent2); }
+.score-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+/* ── SCORE SUMMARY ── */
+#score-summary {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+#score-summary.show { display: flex; }
+.score-card-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 32px 36px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  text-align: center;
+}
+.score-card-wrap h2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--white);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.total-score-row {
+  background: linear-gradient(135deg, #0f2a4a, #0a2040);
+  border: 1px solid var(--accent);
+  border-radius: 6px; padding: 20px 24px;
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 16px;
+}
+:root.light .total-score-row { background: linear-gradient(135deg, #cddaed, #b8ccdf); }
+.total-score-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 48px; font-weight: 700;
+  color: var(--accent2); line-height: 1;
+}
+.total-score-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--label);
+  margin-bottom: 4px;
+}
+.pass-badge, .fail-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px; font-weight: 700;
+  padding: 6px 18px; border-radius: 4px;
+}
+.pass-badge { background: var(--green); color: #fff; }
+.fail-badge { background: var(--red); color: #fff; }
+.reset-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted); padding: 8px 18px;
+  border-radius: 4px; font-family: 'Lato', sans-serif;
+  font-size: 13px; cursor: pointer;
+  transition: all .15s; margin-top: 16px;
+}
+.reset-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+/* ── MAIN ── */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── QUESTION CARD ── */
+.q-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.q-card.correct { border-color: var(--green-lit); }
+.q-card.wrong   { border-color: var(--red-lit); }
+
+.q-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 8px;
+}
+.q-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--label);
+}
+.q-status { font-size: 18px; margin-left: auto; }
+
+/* ── STRIP IMAGE (wide HRDP trend format) ── */
+.strip-wrap {
+  padding: 0 16px 12px;
+}
+.strip-img {
+  width: 100%;
+  border-radius: 6px;
+  display: block;
+  border: 1px solid var(--border);
+  background: #fff;
+  object-fit: contain;
+}
+
+/* ── CHOICES ── */
+.choices {
+  padding: 0 16px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.choice-btn {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Lato', sans-serif;
+  font-size: 14px; font-weight: 700;
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: center;
+  transition: all .15s;
+  letter-spacing: .3px;
+}
+.choice-btn:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent2);
+  color: #fff;
+}
+.choice-btn:disabled { cursor: default; }
+.choice-btn.correct {
+  background: #0a2016;
+  border-color: var(--green-lit);
+  color: #7de0a0;
+}
+.choice-btn.wrong {
+  background: #200a0a;
+  border-color: var(--red-lit);
+  color: #e08080;
+}
+.choice-btn.reveal {
+  background: #0a2016;
+  border-color: var(--green-lit);
+  color: #7de0a0;
+  opacity: .6;
+}
+:root.light .choice-btn.correct { background: #c8eeda; color: #0d4a24; }
+:root.light .choice-btn.wrong   { background: #f5d0d0; color: #6b1010; }
+:root.light .choice-btn.reveal  { background: #c8eeda; color: #0d4a24; opacity: .7; }
+
+/* ── FEEDBACK ── */
+.feedback {
+  margin: 0 16px 14px;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  display: none;
+  line-height: 1.5;
+}
+.feedback.correct {
+  background: #0a2016;
+  border-left: 3px solid var(--green-lit);
+  color: #7de0a0;
+  display: block;
+}
+.feedback.wrong {
+  background: #200a0a;
+  border-left: 3px solid var(--red-lit);
+  color: #e08080;
+  display: block;
+}
+:root.light .feedback.correct { background: #c8eeda; color: #0d4a24; }
+:root.light .feedback.wrong   { background: #f5d0d0; color: #6b1010; }
+
+/* ── NAV (prev / next) ── */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 2px 30px;
+}
+.nav-btn {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 12px 22px;
+  cursor: pointer;
+  transition: all .15s;
+  flex: 1;
+}
+.nav-btn:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent2);
+  color: #fff;
+}
+.nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+.nav-jump {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--muted);
+  min-width: 70px;
+  text-align: center;
+}
+
+/* ── NAME FIELD / TEST MODE / SEND STATUS ── */
+.name-field { text-align: left; margin-bottom: 20px; }
+.name-field label {
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--label); margin-bottom: 6px;
+}
+.name-field input {
+  width: 100%;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Lato', sans-serif;
+  font-size: 15px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color .15s;
+}
+.name-field input:focus { border-color: var(--accent2); }
+.name-field input.invalid { border-color: var(--red-lit); }
+.name-hint { font-size: 12px; color: var(--red-lit); margin-top: 4px; min-height: 16px; }
+
+.choice-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent2);
+  color: #fff;
+}
+.tech-line { font-size: 13px; color: var(--muted); margin: -8px 0 16px; }
+.tech-line strong { color: var(--text); }
+.send-status { font-size: 13px; margin-top: 4px; min-height: 20px; }
+.send-status.ok   { color: var(--green-lit); }
+.send-status.fail { color: var(--red-lit); }
+.send-status.busy { color: var(--muted); }
+.primary-wide {
+  width: 100%; margin-top: 16px; padding: 10px 18px;
+}
+
+/* ── PICKER MODAL ── */
+#picker-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+#picker-overlay.show { display: flex; }
+.picker-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 32px 36px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.picker-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--label); margin-bottom: 10px;
+}
+.picker-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px; font-weight: 700;
+  color: var(--white); margin-bottom: 6px;
+}
+.picker-sub {
+  font-size: 13px; color: var(--muted);
+  margin-bottom: 24px;
+}
+.picker-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.pick-btn {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 700;
+  padding: 14px 8px;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+}
+.pick-btn:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent2);
+  color: #fff;
+}
+.pick-btn.selected {
+  background: var(--accent);
+  border-color: var(--accent2);
+  color: #fff;
+}
+.pick-btn:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+}
+.pick-btn .pick-label {
+  display: block;
+  font-size: 10px; font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  opacity: .7;
+}
+.picker-start {
+  background: var(--accent);
+  border: none; color: #fff;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px; font-weight: 700;
+  padding: 12px 36px;
+  border-radius: 5px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: background .15s;
+  width: 100%;
+}
+.picker-start:hover { background: var(--accent2); }
+
+@media (max-width: 600px) {
+  .choices { grid-template-columns: 1fr; }
+  header h1 { font-size: 24px; }
+  .score-btn { padding: 6px 10px; font-size: 11px; letter-spacing: 0; }
+  .progress-bar-outer { width: 60px; }
+  #progress-text { min-width: 36px; font-size: 12px; }
+  .controls-inner { flex-wrap: nowrap; gap: 6px; }
+  .nav-btn { padding: 12px 10px; font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-text">
+      <div class="header-eyebrow">Pivotal Health · Cardiologs Platform Training</div>
+      <h1>HRDP <span>Identification Drill</span></h1>
+      <div class="header-sub"><span id="strip-count">—</span> Samples · Identify the Rhythm from the Density Plot · Self-Scoring</div>
+    </div>
+    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="progress-wrap">
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar"></div>
+      </div>
+      <span id="progress-text">0 / 25</span>
+    </div>
+    <div class="spacer"></div>
+    <span id="save-status"></span>
+    <button class="score-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);margin-right:4px;" onmouseover="this.style.borderColor='var(--red-lit)';this.style.color='var(--red-lit)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'" onclick="resetDrill()">Reset</button>
+    <button class="score-btn" id="score-btn" onclick="onScoreClick()">Score</button>
+  </div>
+</div>
+
+<div id="picker-overlay">
+  <div class="picker-box">
+    <div class="picker-eyebrow">Pivotal Health · Cardiologs Platform Training</div>
+    <div class="picker-title">How many strips?</div>
+    <div class="picker-sub" id="picker-sub">Choose your session length</div>
+    <div class="name-field">
+      <label for="tech-name">Technician Name</label>
+      <input type="text" id="tech-name" placeholder="First and last name" autocomplete="name"
+        oninput="this.classList.remove('invalid');document.getElementById('name-hint').textContent=''">
+      <div class="name-hint" id="name-hint"></div>
+    </div>
+    <div class="picker-options" id="picker-options">
+      <button class="pick-btn" data-count="10" onclick="selectCount(this)">
+        10 <span class="pick-label">Quick</span>
+      </button>
+      <button class="pick-btn" data-count="25" onclick="selectCount(this)">
+        25 <span class="pick-label">Standard</span>
+      </button>
+      <button class="pick-btn" data-count="50" onclick="selectCount(this)">
+        50 <span class="pick-label">Extended</span>
+      </button>
+      <button class="pick-btn" data-count="all" onclick="selectCount(this)">
+        All <span class="pick-label">Full Drill</span>
+      </button>
+    </div>
+    <button class="picker-start" id="picker-start" onclick="startDrill()">Start Drill</button>
+  </div>
+</div>
+
+<div id="score-summary">
+  <div class="score-card-wrap">
+    <h2>Drill Results</h2>
+    <div class="tech-line" id="tech-line"></div>
+    <div class="total-score-row">
+      <div>
+        <div class="total-score-label">Total Score</div>
+        <div class="total-score-num" id="score-num">—</div>
+      </div>
+      <div id="pass-fail"></div>
+    </div>
+    <div class="send-status" id="send-status"></div>
+    <button class="score-btn primary-wide" id="submit-results-btn" onclick="onSubmitFromModal()" style="display:none;">Submit Results</button>
+    <button class="score-btn primary-wide" id="resend-btn" onclick="sendResults()" style="display:none;">Try Sending Again</button>
+    <button class="reset-btn" id="email-btn" onclick="emailResults()" style="width:100%;display:none;">Email Results Instead</button>
+    <button class="reset-btn" onclick="resetDrill()" style="margin-top:20px;width:100%;">Reset &amp; Try Again</button>
+    <button class="reset-btn" onclick="document.getElementById('score-summary').classList.remove('show')"
+      style="margin-top:8px;width:100%;">Close</button>
+  </div>
+</div>
+
+<main id="main"></main>
+
+<script>
+// ── FILE LOCATIONS (all relative — keep this file, /images/, answer_key.csv,
+//    and answer_pool.json together in the same repo) ────────────────────────
+const IMG_BASE  = './images/';
+const CSV_URL   = './answer_key.csv';
+const POOL_URL  = './answer_pool.json';
+
+// ── TEST SETTINGS ───────────────────────────────────────────────────────────
+// SUBMIT_URL: paste your Google Apps Script web app URL here (ends in /exec).
+//   Leave blank and results won't be sent anywhere (score still shows).
+const SUBMIT_URL    = 'https://script.google.com/macros/s/AKfycbz18sHTpqj7tf8qi1EsfPXq0J7xohnrIy6VG-ZsmTFTqcBggPDtb3oCpPqzKM9-edByfA/exec';
+// RESULTS_EMAIL: optional backup — if sending fails, the tech can email results here.
+const RESULTS_EMAIL = '';
+const TEST_NAME     = 'HRDP Identification Drill';
+const PASS_PCT      = 80;
+// TEST_MODE true  = no right/wrong shown until the tech submits; answers can be
+//                   changed until then. Feedback appears for review after submitting.
+// TEST_MODE false = original drill behavior (instant feedback on every click).
+const TEST_MODE     = true;
+
+// ── QUESTIONS + POOL — loaded from CSV / JSON ───────────────────────────────
+let QUESTIONS = [];   // [{ id, correct }]
+let POOL = [];        // ["Normal Sinus Rhythm", ...]
+
+// ── CSV PARSER ───────────────────────────────────────────────────────────
+// Expects header row: ID,Answer
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  return lines.slice(1).map(line => {
+    const cols = line.split(',').map(c => c.trim().replace(/\r/g, ''));
+    return { id: cols[0], correct: cols[1] };
+  }).filter(q => q.id && q.correct);
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+const STORE = 'cct_hrdp_drill_v1';
+const PREF_KEY = 'cct_hrdp_drill_count';
+let answered = {};   // { id: chosenAnswer }
+let options = {};    // { id: [4 shuffled choices] }  -- fixed once generated, persisted
+let order = [];       // shuffled list of ids for this session
+let sessionCount = null;
+let cursor = 0;        // index into order[] currently displayed
+let techName = '';
+let submitted = false;   // true once the tech submits — locks answers
+let attemptId = '';      // one id per submission, so a resend doesn't look like a new attempt
+let sentOK = false;
+
+// ── PERSISTENCE ──────────────────────────────────────────────────────────
+function save() {
+  try {
+    localStorage.setItem(STORE, JSON.stringify({ answered, order, options, cursor, techName, submitted, attemptId, sentOK }));
+    showSaveStatus('✓ Saved', 'var(--green-lit)');
+  } catch (e) {}
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    answered = d.answered || {};
+    order = d.order || [];
+    options = d.options || {};
+    cursor = d.cursor || 0;
+    techName = d.techName || '';
+    submitted = !!d.submitted;
+    attemptId = d.attemptId || '';
+    sentOK = !!d.sentOK;
+    return order.length > 0;
+  } catch (e) { return false; }
+}
+
+let saveTimer;
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  showSaveStatus('● Saving…', 'var(--muted)');
+  saveTimer = setTimeout(save, 600);
+}
+
+function showSaveStatus(msg, color) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  el.style.color = color;
+  el.style.opacity = '1';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { el.style.opacity = '0'; }, 2500);
+}
+
+window.addEventListener('beforeunload', () => {
+  if (Object.keys(answered).length > 0) save();
+});
+
+// ── SHUFFLE ───────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Build 4 answer choices for a question: correct + 3 random distractors from the pool
+function buildOptions(q) {
+  const distractorPool = POOL.filter(a => a !== q.correct);
+  const wrongs = shuffle(distractorPool).slice(0, 3);
+  return shuffle([q.correct, ...wrongs]);
+}
+
+// ── PICKER ────────────────────────────────────────────────────────────────
+function showPicker() {
+  const total = QUESTIONS.length;
+  const counts = [10, 25, 50];
+
+  counts.forEach(n => {
+    const btn = document.querySelector(`.pick-btn[data-count="${n}"]`);
+    if (!btn) return;
+    if (n > total) {
+      btn.disabled = true;
+      btn.title = `Not enough HRDP samples (need ${n}, have ${total})`;
+    }
+  });
+
+  const saved = localStorage.getItem(PREF_KEY) || '25';
+  const savedBtn = document.querySelector(`.pick-btn[data-count="${saved}"]`);
+  if (savedBtn && !savedBtn.disabled) {
+    savedBtn.classList.add('selected');
+    sessionCount = saved === 'all' ? total : Math.min(parseInt(saved), total);
+  } else {
+    const fallback = [...counts].reverse().find(n => n <= total) || total;
+    const fallBtn = document.querySelector(`.pick-btn[data-count="${fallback}"]`);
+    if (fallBtn) { fallBtn.classList.add('selected'); sessionCount = fallback; }
+  }
+
+  try { document.getElementById('tech-name').value = localStorage.getItem('cct_tech_name') || ''; } catch (e) {}
+
+  document.getElementById('picker-sub').textContent =
+    `${total} HRDP sample${total !== 1 ? 's' : ''} available in the library`;
+  document.getElementById('picker-overlay').classList.add('show');
+}
+
+function selectCount(btn) {
+  document.querySelectorAll('.pick-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const val = btn.dataset.count;
+  sessionCount = val === 'all' ? QUESTIONS.length : Math.min(parseInt(val), QUESTIONS.length);
+  try { localStorage.setItem(PREF_KEY, val); } catch (e) {}
+}
+
+function startDrill() {
+  if (!sessionCount) return;
+  const nameInput = document.getElementById('tech-name');
+  const name = nameInput.value.trim().replace(/\s+/g, ' ');
+  if (name.split(' ').length < 2) {
+    nameInput.classList.add('invalid');
+    document.getElementById('name-hint').textContent = 'Please enter your first and last name.';
+    nameInput.focus();
+    return;
+  }
+  techName = name;
+  try { localStorage.setItem('cct_tech_name', name); } catch (e) {}
+  document.getElementById('picker-overlay').classList.remove('show');
+  answered = {};
+  options = {};
+  cursor = 0;
+  submitted = false;
+  attemptId = '';
+  sentOK = false;
+  order = shuffle(QUESTIONS.map(q => q.id)).slice(0, sessionCount);
+  order.forEach(id => {
+    const q = QUESTIONS.find(x => x.id === id);
+    options[id] = buildOptions(q);
+  });
+  save();
+  buildDrill();
+}
+
+// ── BUILD ─────────────────────────────────────────────────────────────────
+function buildDrill() {
+  if (!order.length) {
+    order = shuffle(QUESTIONS.map(q => q.id)).slice(0, sessionCount || QUESTIONS.length);
+    order.forEach(id => {
+      const q = QUESTIONS.find(x => x.id === id);
+      if (!options[id]) options[id] = buildOptions(q);
+    });
+    save();
+  }
+
+  const total = order.length;
+  const library = QUESTIONS.length;
+  const countLabel = total === library ? `${total}` : `${total} of ${library}`;
+  document.getElementById('strip-count').textContent = countLabel;
+  document.title = `HRDP Identification Drill (${total} strips)`;
+
+  if (cursor >= total) cursor = 0;
+  updateScoreButton();
+  renderCard();
+  updateProgress();
+}
+
+function renderCard() {
+  const total = order.length;
+  const id = order[cursor];
+  const q = QUESTIONS.find(x => x.id === id);
+  if (!q) return;
+
+  const choices = options[id] || (options[id] = buildOptions(q));
+
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <div class="q-card" id="card-${q.id}">
+      <div class="q-header">
+        <span class="q-num">HRDP ${String(cursor + 1).padStart(2, '0')} of ${total}</span>
+        <span class="q-status" id="status-${q.id}"></span>
+      </div>
+      <div class="strip-wrap">
+        <img class="strip-img"
+          src="${IMG_BASE}${q.id}.png"
+          alt="HRDP ${cursor + 1}"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div style="display:none;align-items:center;justify-content:center;height:120px;
+          border:2px dashed var(--border);border-radius:6px;color:var(--muted);font-size:13px;">
+          Image not found: ${q.id}.png
+        </div>
+      </div>
+      <div class="choices" id="choices-${q.id}">
+        ${choices.map(c => `
+          <button class="choice-btn"
+            data-q="${q.id}"
+            data-choice="${c.replace(/"/g, '&quot;')}"
+            onclick="handleAnswer('${q.id}', this.dataset.choice)">
+            ${c}
+          </button>`).join('')}
+      </div>
+      <div class="feedback" id="fb-${q.id}"></div>
+    </div>
+    <div class="nav-bar">
+      <button class="nav-btn" id="prev-btn" onclick="goPrev()" ${cursor === 0 ? 'disabled' : ''}>◀ Previous</button>
+      <span class="nav-jump">${cursor + 1} / ${total}</span>
+      <button class="nav-btn" id="next-btn" onclick="goNext()" ${cursor === total - 1 ? 'disabled' : ''}>Next ▶</button>
+    </div>
+  `;
+
+  if (answered[q.id]) restoreAnswer(q.id);
+  else if (submitted) revealUnanswered(q.id);
+}
+
+function revealUnanswered(qId) {
+  const q = QUESTIONS.find(x => x.id === qId);
+  const card = document.getElementById(`card-${qId}`);
+  if (!q || !card) return;
+  card.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.disabled = true;
+    if (btn.dataset.choice === q.correct) btn.classList.add('reveal');
+  });
+  card.classList.add('wrong');
+  document.getElementById(`status-${qId}`).textContent = '✗';
+  const fb = document.getElementById(`fb-${qId}`);
+  fb.className = 'feedback wrong';
+  fb.textContent = `Not answered. This is ${q.correct}.`;
+}
+
+function goPrev() {
+  if (cursor > 0) { cursor--; save(); renderCard(); }
+}
+function goNext() {
+  if (cursor < order.length - 1) { cursor++; save(); renderCard(); }
+}
+
+// ── ANSWER HANDLING ──────────────────────────────────────────────────────
+function handleAnswer(qId, choice) {
+  if (submitted) return;
+  if (!TEST_MODE && answered[qId]) return;
+  answered[qId] = choice;
+  restoreAnswer(qId);
+  updateProgress();
+  scheduleSave();
+}
+
+function restoreAnswer(qId) {
+  const q = QUESTIONS.find(x => x.id === qId);
+  if (!q) return;
+  const chosen = answered[qId];
+  const isCorrect = chosen === q.correct;
+  const card = document.getElementById(`card-${qId}`);
+  const fb = document.getElementById(`fb-${qId}`);
+  const status = document.getElementById(`status-${qId}`);
+  if (!card) return;
+
+  // Test mode, not yet submitted: just highlight their pick, no right/wrong
+  if (TEST_MODE && !submitted) {
+    card.querySelectorAll('.choice-btn').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.choice === chosen);
+    });
+    return;
+  }
+
+  card.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.disabled = true;
+    const val = btn.dataset.choice;
+    if (val === chosen && isCorrect)  btn.classList.add('correct');
+    else if (val === chosen)          btn.classList.add('wrong');
+    else if (val === q.correct)       btn.classList.add('reveal');
+  });
+
+  card.classList.add(isCorrect ? 'correct' : 'wrong');
+  status.textContent = isCorrect ? '✓' : '✗';
+
+  fb.className = 'feedback ' + (isCorrect ? 'correct' : 'wrong');
+  fb.textContent = isCorrect
+    ? `Correct! This is ${q.correct}.`
+    : `Incorrect. This is ${q.correct}, not ${chosen}.`;
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────────
+function updateProgress() {
+  const total = order.length;
+  const done = Object.keys(answered).length;
+  const pct = total > 0 ? (done / total) * 100 : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${done} / ${total}`;
+}
+
+// ── SCORE + SUBMIT ────────────────────────────────────────────────────────
+function getTally() {
+  const qs = order.map(id => QUESTIONS.find(q => q.id === id)).filter(Boolean);
+  const total = qs.length;
+  const correct = qs.filter(q => answered[q.id] === q.correct).length;
+  const pct = total > 0 ? Math.round(correct / total * 100) : 0;
+  return { qs, total, correct, pct, pass: pct >= PASS_PCT };
+}
+
+function updateScoreButton() {
+  const btn = document.getElementById('score-btn');
+  if (!btn) return;
+  btn.textContent = submitted ? 'Results' : (TEST_MODE ? 'Submit' : 'Score');
+}
+
+function onScoreClick() {
+  if (!order.length) return;
+  if (TEST_MODE && !submitted) {
+    if (!confirmSubmit()) return;
+    submitTest();
+  }
+  showScore();
+}
+
+function onSubmitFromModal() {
+  if (!confirmSubmit()) return;
+  submitTest();
+  showScore();
+}
+
+function confirmSubmit() {
+  const left = order.length - Object.keys(answered).length;
+  const msg = left > 0
+    ? `You have ${left} unanswered question${left !== 1 ? 's' : ''}. Unanswered questions count as wrong.\n\nSubmit now?`
+    : 'Submit your results? Your answers will be locked.';
+  return confirm(msg);
+}
+
+function submitTest() {
+  submitted = true;
+  attemptId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  save();
+  updateScoreButton();
+  renderCard();
+  sendResults();
+}
+
+function showScore() {
+  if (!order.length) return;
+  const { total, correct, pct, pass } = getTally();
+
+  document.getElementById('tech-line').innerHTML = techName
+    ? `Technician: <strong>${techName.replace(/</g, '&lt;')}</strong>` : '';
+  document.getElementById('score-num').textContent = `${correct} / ${total} (${pct}%)`;
+  const badge = document.getElementById('pass-fail');
+  badge.className = pass ? 'pass-badge' : 'fail-badge';
+  badge.textContent = pct === 100 ? 'PERFECT' : (pass ? 'PASSING' : 'NEEDS WORK');
+
+  // Practice mode: score can be peeked mid-drill; offer an explicit submit.
+  document.getElementById('submit-results-btn').style.display = submitted ? 'none' : 'block';
+  if (submitted && sentOK) setSendStatus('✓ Results sent', 'ok');
+  else if (!submitted) setSendStatus('', '');
+
+  document.getElementById('score-summary').classList.add('show');
+}
+
+function buildResults() {
+  const { qs, total, correct, pct, pass } = getTally();
+  return {
+    test: TEST_NAME,
+    name: techName,
+    attemptId,
+    submittedAt: new Date().toISOString(),
+    correct, total, pct,
+    result: pass ? 'PASS' : 'NEEDS WORK',
+    answers: qs.map((q, i) => ({
+      num: i + 1,
+      id: q.id,
+      chosen: answered[q.id] || '',
+      correct: q.correct,
+      isCorrect: answered[q.id] === q.correct
+    }))
+  };
+}
+
+function setSendStatus(msg, kind) {
+  const el = document.getElementById('send-status');
+  el.textContent = msg;
+  el.className = 'send-status ' + (kind || '');
+  const failed = kind === 'fail';
+  document.getElementById('resend-btn').style.display = failed && SUBMIT_URL ? 'block' : 'none';
+  document.getElementById('email-btn').style.display = failed && RESULTS_EMAIL ? 'block' : 'none';
+}
+
+async function sendResults() {
+  if (!SUBMIT_URL) {
+    setSendStatus(RESULTS_EMAIL ? 'Results were not sent automatically.' : '', RESULTS_EMAIL ? 'fail' : '');
+    return;
+  }
+  setSendStatus('Sending results…', 'busy');
+  try {
+    // text/plain + no-cors avoids the CORS preflight that Apps Script can't answer.
+    // The response is opaque, so a resolved fetch = request delivered.
+    await fetch(SUBMIT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(buildResults())
+    });
+    sentOK = true;
+    save();
+    setSendStatus('✓ Results sent', 'ok');
+  } catch (e) {
+    console.error('Send failed:', e);
+    setSendStatus('Couldn\'t send results — check your connection.', 'fail');
+  }
+}
+
+function emailResults() {
+  const r = buildResults();
+  const missed = r.answers.filter(a => !a.isCorrect)
+    .map(a => `#${a.num} (${a.id}): answered "${a.chosen || 'blank'}", correct "${a.correct}"`);
+  const body = [
+    `Technician: ${r.name}`,
+    `Test: ${r.test}`,
+    `Score: ${r.correct}/${r.total} (${r.pct}%) — ${r.result}`,
+    `Submitted: ${new Date(r.submittedAt).toLocaleString()}`,
+    '',
+    missed.length ? 'Missed:' : 'No missed questions.',
+    ...missed
+  ].join('\n');
+  const subject = `${r.test} — ${r.name} — ${r.pct}%`;
+  location.href = `mailto:${RESULTS_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function resetDrill() {
+  if (!confirm('Reset all answers? You\'ll be able to choose a new session length.')) return;
+  answered = {};
+  options = {};
+  order = [];
+  cursor = 0;
+  submitted = false;
+  try { localStorage.removeItem(STORE); } catch (e) {}
+  document.getElementById('score-summary').classList.remove('show');
+  location.reload();
+}
+
+// ── THEME ─────────────────────────────────────────────────────────────────
+function applyTheme(t) {
+  document.documentElement.classList.toggle('light', t === 'light');
+  document.getElementById('theme-toggle').textContent = t === 'light' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const next = document.documentElement.classList.contains('light') ? 'dark' : 'light';
+  applyTheme(next);
+  try { localStorage.setItem('cct_theme', next); } catch (e) {}
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+(function() {
+  try { applyTheme(localStorage.getItem('cct_theme') === 'light' ? 'light' : 'dark'); }
+  catch (e) { applyTheme('dark'); }
+
+  document.getElementById('main').innerHTML =
+    '<div style="text-align:center;padding:60px;color:var(--muted);font-size:14px;">Loading HRDPs…</div>';
+
+  Promise.all([
+    fetch(CSV_URL + '?cb=' + Date.now()).then(r => {
+      if (!r.ok) throw new Error('answer_key.csv not found');
+      return r.text();
+    }),
+    fetch(POOL_URL + '?cb=' + Date.now()).then(r => {
+      if (!r.ok) throw new Error('answer_pool.json not found');
+      return r.json();
+    })
+  ]).then(([csvText, poolJson]) => {
+    QUESTIONS = parseCSV(csvText);
+    POOL = poolJson;
+    if (!QUESTIONS.length) throw new Error('No questions parsed from CSV');
+    if (!Array.isArray(POOL) || POOL.length < 4) throw new Error('Answer pool needs at least 4 entries');
+
+    const hadProgress = load();
+
+    if (order.length && !order.every(id => QUESTIONS.find(q => q.id === id))) {
+      order = [];
+      answered = {};
+      options = {};
+      cursor = 0;
+    }
+
+    if (hadProgress && order.length && techName) {
+      sessionCount = order.length;
+      buildDrill();
+      const el = document.getElementById('save-status');
+      el.textContent = submitted
+        ? `↩ Submitted results for ${techName}`
+        : `↩ Progress restored (${Object.keys(answered).length} answered)`;
+      el.style.color = 'var(--accent2)';
+      el.style.opacity = '1';
+      setTimeout(() => { el.style.opacity = '0'; }, 4000);
+      // Submitted earlier but the send never went through — try again quietly
+      if (submitted && !sentOK && SUBMIT_URL) sendResults();
+    } else {
+      showPicker();
+    }
+  }).catch(err => {
+    document.getElementById('main').innerHTML =
+      `<div style="text-align:center;padding:60px;color:var(--red-lit);font-size:14px;">
+        Could not load quiz data.<br>
+        <span style="color:var(--muted);font-size:12px;">Make sure answer_key.csv and answer_pool.json are in the repo root, images/ has the HRDP PNGs, and GitHub Pages is enabled.</span>
+      </div>`;
+    console.error('Load error:', err);
+  });
+})();
+</script>
+</body>
+</html>

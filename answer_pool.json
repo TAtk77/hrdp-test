@@ -1,0 +1,19 @@
+[
+  "Normal Sinus Rhythm",
+  "Sinus Bradycardia",
+  "Sinus Tachycardia",
+  "Atrial Fibrillation",
+  "Atrial Flutter",
+  "Atrial Fibrillation with Ventricular Ectopy",
+  "Supraventricular Tachycardia",
+  "Sinus Rhythm with PSVCs",
+  "Sinus Rhythm with Ventricular Ectopy",
+  "Ventricular Tachycardia",
+  "Ventricular Bigeminy",
+  "Ventricular Trigeminy",
+  "1st Degree AV Block",
+  "2nd Degree AV Block Type I",
+  "2nd Degree AV Block Type II",
+  "3rd Degree AV Block",
+  "Paced Rhythm"
+]
